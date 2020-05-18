@@ -20,8 +20,10 @@ public class ColorBrailleModule : MonoBehaviour
     public KMAudio Audio;
     public KMRuleSeedable RuleSeedable;
     public KMSelectable MainSelectable; // Children are in READING order
+    public KMColorblindMode ColorblindMode;
 
     public MeshRenderer[] DotRenderers; // BRAILLE order
+    public TextMesh[] ColorblindIndicators; // BRAILLE order
     public Material[] Colors;
 
     public GameObject DotsParent;
@@ -32,33 +34,11 @@ public class ColorBrailleModule : MonoBehaviour
     private int _correctButtonToPress;
     private bool _isSolved = false;
     private int[] _colorIxs;    // BRAILLE order
+    private bool _colorblind;
+    private static readonly string _colorNames = "KBGCRMYW";
+    private static readonly bool[] _cbBlack = new[] { false, false, true, true, true, true, true, true };
 
     private const int _numLetters = 5;
-
-    //[UnityEditor.MenuItem("DoStuff/DoStuff")]
-    //public static void DoStuff()
-    //{
-    //    var m = FindObjectOfType<ColorBrailleModule>();
-    //    var children = new KMSelectable[30];
-
-    //    for (var dx = 0; dx < 5; dx++)
-    //        for (var dx2 = 0; dx2 < 2; dx2++)
-    //            for (var dy = 0; dy < 3; dy++)
-    //            {
-    //                var x = -.71 + (1.42 / 4 * dx) - .08 + .16 * dx2;
-    //                var y = .16 - dy * .16;
-    //                var obj = m.DotsParent.transform.Find(string.Format("Letter {0} dot {1}", dx + 1, 3 * dx2 + dy + 1));
-    //                obj.transform.parent = m.DotsParent.transform;
-    //                obj.transform.localScale = new Vector3(0.065f, 0.065f, 0.065f);
-    //                obj.transform.localRotation = Quaternion.identity;
-    //                obj.transform.localPosition = new Vector3((float) (x / 10), 0.017f, (float) (y / 10));
-    //                obj.GetComponent<MeshFilter>().sharedMesh = m.RoundedCylinder;
-    //                obj.transform.Find("Highlight").localScale = new Vector3(.13f, .13f, .13f);
-    //                obj.transform.Find("Highlight").localPosition = new Vector3(0, -.03f, 0);
-    //                children[2 * dx + dx2 + 10 * dy] = obj.GetComponent<KMSelectable>();
-    //            }
-    //    m.MainSelectable.Children = children;
-    //}
 
     struct MangledWordInfo
     {
@@ -202,7 +182,7 @@ public class ColorBrailleModule : MonoBehaviour
         Debug.LogFormat(@"[Color Braille #{0}]=svg[Module:]<svg xmlns='http://www.w3.org/2000/svg' viewBox='-.089 -.009 .238 .058' stroke='black' stroke-width='.001'>{1}</svg>", _moduleId, svg.ToString());
 
         for (var i = 0; i < MainSelectable.Children.Length; i++)
-            MainSelectable.Children[i].OnInteract = ledHandler(i);
+            MainSelectable.Children[i].OnInteract = getLedHandler(i);
 
 
         // RULE SEED STARTS HERE
@@ -214,9 +194,21 @@ public class ColorBrailleModule : MonoBehaviour
         _correctButtonToPress = poss[3 * (int) chosenWord.Mangling + mangledChannel];
         Debug.LogFormat(@"[Color Braille #{0}] Correct LED to press is #{1} in reading order.", _moduleId, _correctButtonToPress + 1);
 
+        _colorblind = ColorblindMode.ColorblindModeActive;
+
         foreach (var led in DotRenderers)
             led.sharedMaterial = Colors[0];
+        foreach (var txt in ColorblindIndicators)
+            txt.gameObject.SetActive(false);
         Module.OnActivate += delegate { StartCoroutine(animateLeds(on: true)); };
+    }
+
+    private void setColor(int ix, bool on)
+    {
+        DotRenderers[ix].sharedMaterial = on ? Colors[_colorIxs[ix]] : Colors[0];
+        ColorblindIndicators[ix].text = on ? _colorNames[_colorIxs[ix]].ToString() : "";
+        ColorblindIndicators[ix].color = _cbBlack[_colorIxs[ix]] ? Color.black : Color.white;
+        ColorblindIndicators[ix].gameObject.SetActive(_colorblind && on);
     }
 
     private IEnumerator animateLeds(bool on)
@@ -227,24 +219,24 @@ public class ColorBrailleModule : MonoBehaviour
         {
             if (x < 2 * _numLetters)
             {
-                DotRenderers[3 * x].sharedMaterial = on ? Colors[_colorIxs[3 * x]] : Colors[0];
+                setColor(3 * x, on);
                 yield return new WaitForSeconds(.03f);
             }
             if (x > 0 && x < 2 * _numLetters + 1)
             {
-                DotRenderers[3 * (x - 1) + 1].sharedMaterial = on ? Colors[_colorIxs[3 * (x - 1) + 1]] : Colors[0];
+                setColor(3 * (x - 1) + 1, on);
                 yield return new WaitForSeconds(.03f);
             }
             if (x > 1)
             {
-                DotRenderers[3 * (x - 2) + 2].sharedMaterial = on ? Colors[_colorIxs[3 * (x - 2) + 2]] : Colors[0];
+                setColor(3 * (x - 2) + 2, on);
                 yield return new WaitForSeconds(.03f);
             }
             yield return new WaitForSeconds(.07f);
         }
     }
 
-    private KMSelectable.OnInteractHandler ledHandler(int i)
+    private KMSelectable.OnInteractHandler getLedHandler(int i)
     {
         return delegate
         {
@@ -280,11 +272,17 @@ public class ColorBrailleModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} 5 [press the 5th LED in reading order]";
+    private readonly string TwitchHelpMessage = @"!{0} 5 [press the 5th LED in reading order] | !{0} colorblind [enable color-blind mode]";
 #pragma warning restore 414
 
     KMSelectable[] ProcessTwitchCommand(string command)
     {
+        if (Regex.IsMatch(command, @"^\s*(color[- ]*blind|cb)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) && !_isSolved)
+        {
+            _colorblind = true;
+            StartCoroutine(animateLeds(true));
+            return new KMSelectable[0];
+        }
         var m = Regex.Match(command, @"^\s*(\d+)\s*$");
         int ix;
         if (m.Success && int.TryParse(m.Groups[1].Value, out ix) && ix >= 1 && ix <= 30)
