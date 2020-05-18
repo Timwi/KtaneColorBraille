@@ -7,6 +7,7 @@ using UnityEngine;
 using Rnd = UnityEngine.Random;
 using System.Text;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 /// <summary>
 /// On the Subject of Color Braille
@@ -20,8 +21,11 @@ public class ColorBrailleModule : MonoBehaviour
     public KMRuleSeedable RuleSeedable;
     public KMSelectable MainSelectable; // Children are in READING order
 
-    public MeshRenderer[] LedRenderers; // BRAILLE order
+    public MeshRenderer[] DotRenderers; // BRAILLE order
     public Material[] Colors;
+
+    public GameObject DotsParent;
+    public Mesh RoundedCylinder;
 
     private static int _moduleIdCounter = 1;
     private int _moduleId;
@@ -30,6 +34,31 @@ public class ColorBrailleModule : MonoBehaviour
     private int[] _colorIxs;    // BRAILLE order
 
     private const int _numLetters = 5;
+
+    //[UnityEditor.MenuItem("DoStuff/DoStuff")]
+    //public static void DoStuff()
+    //{
+    //    var m = FindObjectOfType<ColorBrailleModule>();
+    //    var children = new KMSelectable[30];
+
+    //    for (var dx = 0; dx < 5; dx++)
+    //        for (var dx2 = 0; dx2 < 2; dx2++)
+    //            for (var dy = 0; dy < 3; dy++)
+    //            {
+    //                var x = -.71 + (1.42 / 4 * dx) - .08 + .16 * dx2;
+    //                var y = .16 - dy * .16;
+    //                var obj = m.DotsParent.transform.Find(string.Format("Letter {0} dot {1}", dx + 1, 3 * dx2 + dy + 1));
+    //                obj.transform.parent = m.DotsParent.transform;
+    //                obj.transform.localScale = new Vector3(0.065f, 0.065f, 0.065f);
+    //                obj.transform.localRotation = Quaternion.identity;
+    //                obj.transform.localPosition = new Vector3((float) (x / 10), 0.017f, (float) (y / 10));
+    //                obj.GetComponent<MeshFilter>().sharedMesh = m.RoundedCylinder;
+    //                obj.transform.Find("Highlight").localScale = new Vector3(.13f, .13f, .13f);
+    //                obj.transform.Find("Highlight").localPosition = new Vector3(0, -.03f, 0);
+    //                children[2 * dx + dx2 + 10 * dy] = obj.GetComponent<KMSelectable>();
+    //            }
+    //    m.MainSelectable.Children = children;
+    //}
 
     struct MangledWordInfo
     {
@@ -185,7 +214,7 @@ public class ColorBrailleModule : MonoBehaviour
         _correctButtonToPress = poss[3 * (int) chosenWord.Mangling + mangledChannel];
         Debug.LogFormat(@"[Color Braille #{0}] Correct LED to press is #{1} in reading order.", _moduleId, _correctButtonToPress + 1);
 
-        foreach (var led in LedRenderers)
+        foreach (var led in DotRenderers)
             led.sharedMaterial = Colors[0];
         Module.OnActivate += delegate { StartCoroutine(animateLeds(on: true)); };
     }
@@ -198,17 +227,17 @@ public class ColorBrailleModule : MonoBehaviour
         {
             if (x < 2 * _numLetters)
             {
-                LedRenderers[3 * x].sharedMaterial = on ? Colors[_colorIxs[3 * x]] : Colors[0];
+                DotRenderers[3 * x].sharedMaterial = on ? Colors[_colorIxs[3 * x]] : Colors[0];
                 yield return new WaitForSeconds(.03f);
             }
             if (x > 0 && x < 2 * _numLetters + 1)
             {
-                LedRenderers[3 * (x - 1) + 1].sharedMaterial = on ? Colors[_colorIxs[3 * (x - 1) + 1]] : Colors[0];
+                DotRenderers[3 * (x - 1) + 1].sharedMaterial = on ? Colors[_colorIxs[3 * (x - 1) + 1]] : Colors[0];
                 yield return new WaitForSeconds(.03f);
             }
             if (x > 1)
             {
-                LedRenderers[3 * (x - 2) + 2].sharedMaterial = on ? Colors[_colorIxs[3 * (x - 2) + 2]] : Colors[0];
+                DotRenderers[3 * (x - 2) + 2].sharedMaterial = on ? Colors[_colorIxs[3 * (x - 2) + 2]] : Colors[0];
                 yield return new WaitForSeconds(.03f);
             }
             yield return new WaitForSeconds(.07f);
@@ -250,8 +279,22 @@ public class ColorBrailleModule : MonoBehaviour
         return Enumerable.Range(0, 6).Select(bit => (bitPattern & (1 << bit)) != 0 ? (bit + 1).ToString() : "").Join("");
     }
 
-    public IEnumerator ProcessTwitchCommand(string command)
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} 5 [press the 5th LED in reading order]";
+#pragma warning restore 414
+
+    KMSelectable[] ProcessTwitchCommand(string command)
     {
-        yield break;
+        var m = Regex.Match(command, @"^\s*(\d+)\s*$");
+        int ix;
+        if (m.Success && int.TryParse(m.Groups[1].Value, out ix) && ix >= 1 && ix <= 30)
+            return new[] { MainSelectable.Children[ix - 1] };
+        return null;
+    }
+
+    void TwitchHandleForcedSolve()
+    {
+        if (!_isSolved)
+            MainSelectable.Children[_correctButtonToPress].OnInteract();
     }
 }
