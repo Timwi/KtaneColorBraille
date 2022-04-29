@@ -1,13 +1,12 @@
 ﻿using System;
-using ColorBraille;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using KModkit;
+using System.Text;
+using System.Text.RegularExpressions;
+using ColorBraille;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
-using System.Text;
-using System.Collections;
-using System.Text.RegularExpressions;
 
 /// <summary>
 /// On the Subject of Color Braille
@@ -35,6 +34,8 @@ public class ColorBrailleModule : MonoBehaviour
     private bool _isSolved = false;
     private int[] _colorIxs;    // BRAILLE order
     private bool _colorblind;
+    private string[] _words;    // for Souvenir support
+    private Mangling _mangling;     // for Souvenir support
     private static readonly string _colorNames = "KBGCRMYW";
     private static readonly bool[] _cbBlack = new[] { false, false, true, true, true, true, true, true };
 
@@ -50,14 +51,14 @@ public class ColorBrailleModule : MonoBehaviour
     {
         _moduleId = _moduleIdCounter++;
 
-        var threeWords = WordsData.Words.Keys.ToList().Shuffle().Take(3).ToArray();
-        Debug.LogFormat(@"[Color Braille #{0}] The red word is: {1}", _moduleId, threeWords[0].ToUpperInvariant());
-        Debug.LogFormat(@"[Color Braille #{0}] The green word is: {1}", _moduleId, threeWords[1].ToUpperInvariant());
-        Debug.LogFormat(@"[Color Braille #{0}] The blue word is: {1}", _moduleId, threeWords[2].ToUpperInvariant());
+        _words = WordsData.Words.Keys.ToList().Shuffle().Take(3).ToArray();
+        Debug.LogFormat(@"[Color Braille #{0}] The red word is: {1}", _moduleId, _words[0].ToUpperInvariant());
+        Debug.LogFormat(@"[Color Braille #{0}] The green word is: {1}", _moduleId, _words[1].ToUpperInvariant());
+        Debug.LogFormat(@"[Color Braille #{0}] The blue word is: {1}", _moduleId, _words[2].ToUpperInvariant());
 
         tryAgain:
         var mangledChannel = Rnd.Range(0, 3);
-        var word = WordsData.Words[threeWords[mangledChannel]];
+        var word = WordsData.Words[_words[mangledChannel]];
         if (word.Length != _numLetters)
             throw new InvalidOperationException();
         var mangledWords = new List<MangledWordInfo>();
@@ -158,13 +159,14 @@ public class ColorBrailleModule : MonoBehaviour
             goto tryAgain;
 
         var chosenWord = mangledWords.PickRandom();
+        _mangling = chosenWord.Mangling;    // for Souvenir
 
         Debug.LogFormat(@"[Color Braille #{0}] The mangled channel is: {1}", _moduleId, new[] { "red", "green", "blue" }[mangledChannel]);
-        Debug.LogFormat(@"[Color Braille #{0}] The mangling is: {1}", _moduleId, chosenWord.Mangling);
+        Debug.LogFormat(@"[Color Braille #{0}] The mangling is: {1}", _moduleId, _mangling);
         Debug.LogFormat(@"[Color Braille #{0}] The unmangled braille is: {1}", _moduleId, toBrailleNumbers(word));
         Debug.LogFormat(@"[Color Braille #{0}] The mangled braille is: {1}", _moduleId, toBrailleNumbers(chosenWord.MangledWord));
 
-        var displayedWords = Enumerable.Range(0, 3).Select(ch => ch == mangledChannel ? chosenWord.MangledWord : WordsData.Words[threeWords[ch]]).ToArray();
+        var displayedWords = Enumerable.Range(0, 3).Select(ch => ch == mangledChannel ? chosenWord.MangledWord : WordsData.Words[_words[ch]]).ToArray();
 
         var svgColorNames = "#000,#00f,#0f0,#0ff,#f00,#f0f,#ff0,#fff".Split(',');
         var svg = new StringBuilder();
@@ -279,7 +281,7 @@ public class ColorBrailleModule : MonoBehaviour
     {
         if (Regex.IsMatch(command, @"^\s*(color[- ]*blind|cb)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) && !_isSolved)
         {
-            _colorblind = true;
+            _colorblind = !_colorblind;
             StartCoroutine(animateLeds(true));
             return new KMSelectable[0];
         }

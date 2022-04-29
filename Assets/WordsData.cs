@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ColorBraille
 {
@@ -681,7 +678,6 @@ namespace ColorBraille
             { "honest", new[] { 19, 21, 29, 17, 12 } },
             { "honey", new[] { 19, 21, 29, 17, 61 } },
             { "honour", new[] { 19, 21, 29, 51, 23 } },
-            { "hooker", new[] { 19, 21, 21, 5, 59 } },
             { "horse", new[] { 19, 21, 23, 14, 17 } },
             { "hostel", new[] { 19, 21, 12, 17, 7 } },
             { "hotel", new[] { 19, 21, 30, 17, 7 } },
