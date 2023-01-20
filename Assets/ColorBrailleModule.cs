@@ -113,7 +113,7 @@ public class ColorBrailleModule : MonoBehaviour
                 }
                 break;
 
-                case Mangling.EachLetterUpsideDown:
+                case Mangling.EachLetterRotated180:
                     for (var ltr = 0; ltr < _numLetters; ltr++)
                         mangledWord[ltr] =
                             ((word[ltr] & (1 << 0)) << 5) |

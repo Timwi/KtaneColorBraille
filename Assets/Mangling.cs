@@ -8,7 +8,7 @@
         MiddleRowShiftedToTheLeft,
         BottomRowShiftedToTheRight,
         BottomRowShiftedToTheLeft,
-        EachLetterUpsideDown,
+        EachLetterRotated180,
         EachLetterHorizontallyFlipped,
         EachLetterVerticallyFlipped,
         DotsAreInverted
