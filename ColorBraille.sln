@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{70BDB71F-63C4-A6B1-7A99-CF43229C08B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorBraille", "ColorBraille.csproj", "{E1237FEB-3CCE-F9AE-1C32-55ECF70915A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{17B06D57-7C6A-73F9-5CE1-6FF34090EC12}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorBraille-Editor", "ColorBraille-Editor.csproj", "{49BF7ACE-D96A-0EE4-ED02-4E1971C86D0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,19 +11,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{70BDB71F-63C4-A6B1-7A99-CF43229C08B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{70BDB71F-63C4-A6B1-7A99-CF43229C08B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{70BDB71F-63C4-A6B1-7A99-CF43229C08B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{70BDB71F-63C4-A6B1-7A99-CF43229C08B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{17B06D57-7C6A-73F9-5CE1-6FF34090EC12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{17B06D57-7C6A-73F9-5CE1-6FF34090EC12}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{17B06D57-7C6A-73F9-5CE1-6FF34090EC12}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{17B06D57-7C6A-73F9-5CE1-6FF34090EC12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1237FEB-3CCE-F9AE-1C32-55ECF70915A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1237FEB-3CCE-F9AE-1C32-55ECF70915A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1237FEB-3CCE-F9AE-1C32-55ECF70915A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1237FEB-3CCE-F9AE-1C32-55ECF70915A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49BF7ACE-D96A-0EE4-ED02-4E1971C86D0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49BF7ACE-D96A-0EE4-ED02-4E1971C86D0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49BF7ACE-D96A-0EE4-ED02-4E1971C86D0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49BF7ACE-D96A-0EE4-ED02-4E1971C86D0F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Assembly-CSharp.csproj
+		StartupItem = ColorBraille.csproj
 	EndGlobalSection
 EndGlobal

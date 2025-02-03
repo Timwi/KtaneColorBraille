@@ -1,0 +1,10 @@
+{
+  "name": "ColorBraille-Editor",
+  "references": [
+    "ColorBraille"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": []
+}
